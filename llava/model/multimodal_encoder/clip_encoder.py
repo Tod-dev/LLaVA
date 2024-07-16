@@ -3,7 +3,6 @@ import torch.nn as nn
 
 from transformers import CLIPVisionModel, CLIPImageProcessor, CLIPVisionConfig
 
-
 class CLIPVisionTower(nn.Module):
     def __init__(self, vision_tower, args, delay_load=False):
         super().__init__()
@@ -87,6 +86,9 @@ class CLIPVisionTower(nn.Module):
     def num_patches(self):
         return (self.config.image_size // self.config.patch_size) ** 2
 
+    def get_num_tokens(self):
+        return self.vision_tower.vision_model.embeddings.num_positions - 1  # -1: excluding cls token
+
 
 
 class CLIPVisionTowerS2(CLIPVisionTower):
@@ -145,3 +147,6 @@ class CLIPVisionTowerS2(CLIPVisionTower):
     @property
     def hidden_size(self):
         return self.config.hidden_size * len(self.s2_scales)
+
+    def get_num_tokens(self):
+        return self.vision_model.embeddings.num_positions - 1  # -1: excluding cls token

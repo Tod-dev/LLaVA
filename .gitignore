@@ -33,3 +33,25 @@ ckpts*
 
 # Demo
 serve_images/
+
+# Ignore directories
+.vscode-server/
+llava.egg-info/
+llava/__pycache__/
+llava/model/__pycache__/
+llava/model/language_model/__pycache__/
+llava/model/multimodal_encoder/__pycache__/
+llava/model/multimodal_projector/__pycache__/
+llava/serve/__pycache__/
+playground/data/LLaVA-Pretrain/
+playground/data/vg/
+playground/data/coco/
+playground/data/gqa/
+playground/data/ocr_vqa/
+playground/data/textvqa/
+playground/data/llava_v1_5_mix665k.json
+serve_images/
+
+# Ignore specific files
+2024-04-17-conv.json
+
