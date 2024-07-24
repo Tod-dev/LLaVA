@@ -17,7 +17,7 @@ def build_pos_embeds(
 ):
     # pos emb
     if config.pos_emb:
-        pos_emb = torch.nn.Parameter(torch.zeros(1, num_input_tokens, vision_hidden_size))
+        pos_emb = torch.nn.Parameter(torch.zeros(1, num_input_tokens, vision_hidden_size)) #seq_len, hidden_size
         nn.init.trunc_normal_(pos_emb, mean=0.0, std=0.02)
     else:
         pos_emb = None
@@ -90,8 +90,10 @@ class Projector(nn.Module):
         if self.prenorm is not None:
             x = self.prenorm(x)
 
+        # print(" forward x shape:", x.shape)
+        # print(" forward pos_emb:", self.pos_emb.shape)
         if self.pos_emb is not None:
-            x += self.pos_emb
+            x = x + self.pos_emb
 
         x = self._forward(x)  # (B, L, output_hidden_size)
 
@@ -99,7 +101,7 @@ class Projector(nn.Module):
         if self.eos_tokens is not None:
             x = torch.cat([x, self.eos_tokens.expand(B, -1, -1)], dim=1)
 
-        output = BaseModelOutput(last_hidden_state=x)
+        output = x #BaseModelOutput(last_hidden_state=x)
         return output
     
     def _load_from_state_dict(self, state_dict, *args, **kwargs):
