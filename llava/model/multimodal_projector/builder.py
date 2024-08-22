@@ -3,6 +3,7 @@ import torch.nn as nn
 import re
 from .projectors import CAbstractor
 from .configuration_honeybee import HoneybeeVisualProjectorConfig
+from .projectors import DAbstractor
 
 class IdentityMap(nn.Module):
     def __init__(self):
@@ -56,19 +57,43 @@ def build_vision_projector(config, delay_load=False, **kwargs):
 
     # num_input_tokens = config.mm_hidden_size
 
+    if projector_type == 'd_abs':
+        proj_config = {
+            "projector_type": "d-abs",
+            "d_model": 1024,
+            "decoder_layers": 6,
+            "use_pretrained_backbone": False,
+            "num_eos_tokens": 0,
+            "initializer_range": 0.02,
+            "disable_custom_kernels": False,
+            "num_feature_levels": 1,
+            "feature_layer_index": -1,
+            "pos_emb": True,
+            "manual_init_refPoints": True,
+            "learnable_mRP": True,
+            "pooled_v_target": "query",
+            "num_queries": "${model_config.projector_config.num_query_tokens}",#required
+            "num_query_tokens": 144,
+            "encoder_hidden_size": config.mm_hidden_size ,# num_input_tokens+1, #+1 to include cls token
+            "output_hidden_size": config.hidden_size #5120 #lm_hidden_size, #self.text_config.hidden_size
+        }
+
+
+        return DAbstractor(projector_config, num_input_tokens)
+
     if projector_type == 'c_abs':
         # projector has three inter-module configs:
         # 1) encoder_hidden_size (hidden size of vision model)
         # 2) output_hidden_size (hidden size of LLM)
         # the number of query tokens  (total num_visual_tokens = num_query_tokens + num_eos_tokens)
         proj_config = {
-            # "projector_type": "c-abs",
+            "projector_type": "c-abs",
             "depth": 3,
             "mlp_depth": 2,
             "hidden_size": 1024 , #1024, #vision_hidden_size, #HoneybeeVisionConfig.from_exp_config(vision_config).hidden_size,
             "num_eos_tokens": 0,
             "pos_emb": True,
-            # "feature_layer_index": -1,
+            "feature_layer_index": -1,
             "prenorm": False,
             "num_query_tokens": 144,
             "encoder_hidden_size": config.mm_hidden_size ,# num_input_tokens+1, #+1 to include cls token
