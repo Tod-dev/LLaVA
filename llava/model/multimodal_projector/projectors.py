@@ -107,6 +107,16 @@ class Projector(nn.Module):
         output = x #BaseModelOutput(last_hidden_state=x)
         return output
     
+    def _load_from_state_dict(self, state_dict, *args, **kwargs):
+        print("Projector _load_from_state_dict", state_dict.keys())
+        # update old ckpt compatible with current code
+        pos_emb = state_dict["abstractor.pos_emb"]
+        if pos_emb.size(1) == self.pos_emb.size(1) + 1:
+            # remove obsolete first pos emb (for cls token originally)
+            state_dict["abstractor.pos_emb"] = pos_emb[:, 1:]
+
+        super()._load_from_state_dict(state_dict, *args, **kwargs)
+    
     # def _load_from_state_dict(self, state_dict, *args, **kwargs):
     #     print("load from state dict")
     #     print(vars(self))

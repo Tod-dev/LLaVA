@@ -31,13 +31,6 @@ class SimpleResBlock(nn.Module):
         x = self.pre_norm(x)
         return x + self.proj(x)
 
-class CAbstractorProjector(nn.Module):
-    def __init__(self, config, num_input_tokens):
-        super().__init__()
-        self.cabstractor = CAbstractor(config, num_input_tokens)
-
-    def forward(self, x):
-        return self.cabstractor(x)
 
 def build_vision_projector(config, delay_load=False, **kwargs):
     projector_type = getattr(config, 'mm_projector_type', 'linear')
@@ -63,7 +56,7 @@ def build_vision_projector(config, delay_load=False, **kwargs):
             "output_hidden_size": config.hidden_size #5120 #lm_hidden_size, #self.text_config.hidden_size
         }
         projector_config = HoneybeeVisualProjectorConfig(**proj_config)
-        return CAbstractorProjector(projector_config, num_input_tokens)
+        return CAbstractor(projector_config, num_input_tokens)
 
     if projector_type == 'linear':
         return nn.Linear(config.mm_hidden_size, config.hidden_size)
