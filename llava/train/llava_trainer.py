@@ -245,10 +245,6 @@ class LLaVATrainer(Trainer):
             if self.args.local_rank == 0 or self.args.local_rank == -1:
                 self.model.config.save_pretrained(output_dir)
                 torch.save(weight_to_save, os.path.join(output_dir, f'mm_projector.bin'))
-                # non funziona -> trova il file ma: raise ValueError(f"Can't find a valid checkpoint at {checkpoint_path}")
-                # from  transformers.trainer import TRAINER_STATE_NAME
-                # self.state.save_to_json(os.path.join(output_dir, TRAINER_STATE_NAME))
-                self.save_model(output_dir, _internal_call=True)
         else:
             super(LLaVATrainer, self)._save_checkpoint(model, trial, metrics)
 
