@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 import re
+
 from .projectors import CAbstractor
 from .configuration_honeybee import HoneybeeVisualProjectorConfig
-# from .projectors import DAbstractor
 
 class IdentityMap(nn.Module):
     def __init__(self):
@@ -17,28 +17,19 @@ class IdentityMap(nn.Module):
         return {"mm_projector_type": 'identity'}
 
 
-# class SimpleResBlock(nn.Module):
-#     def __init__(self, input_channels, output_channels):
-#         super().__init__()
-#         print("ADAPTER is set to -> SimpleResBlock, input_channels: ", input_channels, "output_channels: ", output_channels)
-#         self.pre_norm = nn.LayerNorm(input_channels)
+class SimpleResBlock(nn.Module):
+    def __init__(self, channels):
+        super().__init__()
+        self.pre_norm = nn.LayerNorm(channels)
 
-#         self.proj = nn.Sequential(
-#             nn.Linear(input_channels, input_channels),
-#             nn.GELU(),
-#             nn.Linear(input_channels, input_channels)
-#         )
-
-#         self.adjust_channels = nn.Linear(input_channels, output_channels) if input_channels != output_channels else nn.Identity()
-
-#     def forward(self, x):
-#         print("adapter SimpleResBlock forward", x.shape)  # [16, 576, 1024]
-#         x = self.pre_norm(x)
-#         proj_output = self.proj(x)
-#         print("proj_output shape:", proj_output.shape)
-#         proj_output = self.adjust_channels(proj_output)
-#         print("adjusted proj_output shape:", proj_output.shape)
-#         return x + proj_output
+        self.proj = nn.Sequential(
+            nn.Linear(channels, channels),
+            nn.GELU(),
+            nn.Linear(channels, channels)
+        )
+    def forward(self, x):
+        x = self.pre_norm(x)
+        return x + self.proj(x)
 
 class CAbstractorProjector(nn.Module):
     def __init__(self, config, num_input_tokens):
@@ -51,34 +42,8 @@ class CAbstractorProjector(nn.Module):
 def build_vision_projector(config, delay_load=False, **kwargs):
     projector_type = getattr(config, 'mm_projector_type', 'linear')
     num_input_tokens = kwargs.get('num_input_tokens', None)
-
     print("CONFIGS SIZES:", config.mm_hidden_size, config.hidden_size, num_input_tokens)
     # CONFIGS SIZES: 1024 5120 576
-
-    # num_input_tokens = config.mm_hidden_size
-
-    # if projector_type == 'd_abs':
-    #     proj_config = {
-    #         "projector_type": "d-abs",
-    #         "d_model": 1024,
-    #         "decoder_layers": 6,
-    #         "use_pretrained_backbone": False,
-    #         "num_eos_tokens": 0,
-    #         "initializer_range": 0.02,
-    #         "disable_custom_kernels": False,
-    #         "num_feature_levels": 1,
-    #         "feature_layer_index": -1,
-    #         "pos_emb": True,
-    #         "manual_init_refPoints": True,
-    #         "learnable_mRP": True,
-    #         "pooled_v_target": "query",
-    #         "num_queries": "${model_config.projector_config.num_query_tokens}",#required
-    #         "num_query_tokens": 144,
-    #         "encoder_hidden_size": config.mm_hidden_size ,# num_input_tokens+1, #+1 to include cls token
-    #         "output_hidden_size": config.hidden_size #5120 #lm_hidden_size, #self.text_config.hidden_size
-    #     }
-    #     return DAbstractor(projector_config, num_input_tokens)
-
     if projector_type == 'c_abs':
         # projector has three inter-module configs:
         # 1) encoder_hidden_size (hidden size of vision model)
@@ -99,9 +64,6 @@ def build_vision_projector(config, delay_load=False, **kwargs):
         }
         projector_config = HoneybeeVisualProjectorConfig(**proj_config)
         return CAbstractorProjector(projector_config, num_input_tokens)
-
-    # if projector_type == 'simple_resblock':
-    #     return SimpleResBlock(config.mm_hidden_size, config.hidden_size)
 
     if projector_type == 'linear':
         return nn.Linear(config.mm_hidden_size, config.hidden_size)
