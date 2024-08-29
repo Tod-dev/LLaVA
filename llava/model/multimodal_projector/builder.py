@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import re
 
-from .projectors import CAbstractor
-from .configuration_honeybee import HoneybeeVisualProjectorConfig
+from .honeybee.projectors import CAbstractor
+from .honeybee.configuration_honeybee import HoneybeeVisualProjectorConfig
 
 class IdentityMap(nn.Module):
     def __init__(self):
