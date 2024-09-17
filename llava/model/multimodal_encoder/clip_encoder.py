@@ -88,6 +88,7 @@ class CLIPVisionTower(nn.Module):
         return (self.config.image_size // self.config.patch_size) ** 2
 
     def get_num_tokens(self):
+        self.load_model()
         return self.vision_tower.vision_model.embeddings.num_positions - 1  # -1: excluding cls token
 
 
@@ -150,4 +151,5 @@ class CLIPVisionTowerS2(CLIPVisionTower):
         return self.config.hidden_size * len(self.s2_scales)
 
     def get_num_tokens(self):
+        print("self get_num_tokens", self)
         return self.vision_tower.vision_model.embeddings.num_positions - 1  # -1: excluding cls token

@@ -34,8 +34,9 @@ class SimpleResBlock(nn.Module):
 
 def build_vision_projector(config, delay_load=False, **kwargs):
     projector_type = getattr(config, 'mm_projector_type', 'linear')
+    honeybee_num_query_tokens = 256 # getattr(config, 'honeybee_num_query_tokens', 144) 
     num_input_tokens = kwargs.get('num_input_tokens', None)
-    print("CONFIGS SIZES:", config.mm_hidden_size, config.hidden_size, num_input_tokens)
+    print("CONFIGS SIZES:", config.mm_hidden_size, config.hidden_size, num_input_tokens,honeybee_num_query_tokens)
     # CONFIGS SIZES: 1024 5120 576
     if projector_type == 'c_abs':
         # projector has three inter-module configs:
@@ -51,7 +52,7 @@ def build_vision_projector(config, delay_load=False, **kwargs):
             "pos_emb": True,
             "feature_layer_index": -1,
             "prenorm": False,
-            "num_query_tokens": 144,
+            "num_query_tokens": honeybee_num_query_tokens,
             "encoder_hidden_size": config.mm_hidden_size ,# num_input_tokens+1, #+1 to include cls token
             "output_hidden_size": config.hidden_size #5120 #lm_hidden_size, #self.text_config.hidden_size
         }
