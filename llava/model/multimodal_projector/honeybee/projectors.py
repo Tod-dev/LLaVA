@@ -89,6 +89,8 @@ class Projector(nn.Module):
             x: (B, L, encoder_hidden_size) tensor from the visual backbone (CLIP visual encoder),
                 including cls token.
         """
+        #print("projector forward of x ", x.shape)
+        #projector forward of x  torch.Size([8, 576, 1024])
         if self.prenorm is not None:
             x = self.prenorm(x)
 
