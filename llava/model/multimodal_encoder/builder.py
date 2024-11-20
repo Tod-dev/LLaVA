@@ -1,7 +1,7 @@
 import os
 #from .clip_encoder import CLIPVisionTower, CLIPVisionTowerS2
 
-from .clip_encoder_more import CLIPVisionTower, CLIPVisionTowerS2, SigLIPVisionTower, SigLIPVisionTowerS2
+from .clip_encoder_next import CLIPVisionTower, CLIPVisionTowerS2, SigLIPVisionTower, SigLIPVisionTowerS2
 
 
 def build_vision_tower(vision_tower_cfg, **kwargs):

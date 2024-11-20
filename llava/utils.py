@@ -7,6 +7,7 @@ import sys
 import requests
 
 from llava.constants import LOGDIR
+import torch.distributed as dist
 
 server_error_msg = "**NETWORK ERROR DUE TO HIGH TRAFFIC. PLEASE REGENERATE OR REFRESH THIS PAGE.**"
 moderation_msg = "YOUR INPUT VIOLATES OUR CONTENT MODERATION GUIDELINES. PLEASE TRY AGAIN."
@@ -55,6 +56,13 @@ def build_logger(logger_name, logger_filename):
                 item.addHandler(handler)
 
     return logger
+
+def rank0_print(*args):
+    if dist.is_initialized():
+        if dist.get_rank() == 0:
+            print(f"Rank {dist.get_rank()}: ", *args)
+    else:
+        print(*args)
 
 
 class StreamToLogger(object):

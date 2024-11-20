@@ -138,8 +138,11 @@ class LlavaMetaForCausalLM(ABC):
         return self.get_model().get_vision_tower()
 
     def encode_images(self, images):
+        # print("images ", images.shape) # image_features vit torch.Size([25, 3, 336, 336])
         image_features = self.get_model().get_vision_tower()(images)
+        # print("image_features vit", image_features.shape) # image_features vit torch.Size([25, 576, 1024])
         image_features = self.get_model().mm_projector(image_features)
+        # print("image_features proj", image_features.shape) # image_features vit ttorch.Size([25, 576, 5120])
         return image_features
 
     def prepare_inputs_labels_for_multimodal(
@@ -149,12 +152,13 @@ class LlavaMetaForCausalLM(ABC):
         vision_tower = self.get_vision_tower()
         if vision_tower is None or images is None or input_ids.shape[1] == 1:
             return input_ids, position_ids, attention_mask, past_key_values, None, labels
-       # print("images", images.shape, images.ndim)
+        # print(" image type ", type(images), len(images)) # image type  <class 'list'> 8
+        # print("images", images.shape, images.ndim)
+        # print("images[0]", images[0].shape) # images[0] torch.Size([3, 3, 336, 336])
         #images torch.Size([8, 3, 336, 336]) ndim = 4
-        #print(" image type ", type(images))
         #image type  <class 'torch.Tensor'>
         if type(images) is list or images.ndim == 5:
-            print("Grid splitting is happening")
+            # print("Grid splitting is happening")
             if type(images) is list:
                 images = [x.unsqueeze(0) if x.ndim == 3 else x for x in images]
             concat_images = torch.cat([image for image in images], dim=0)
@@ -163,7 +167,7 @@ class LlavaMetaForCausalLM(ABC):
             image_features = torch.split(image_features, split_sizes, dim=0)
             mm_patch_merge_type = getattr(self.config, 'mm_patch_merge_type', 'flat')
             image_aspect_ratio = getattr(self.config, 'image_aspect_ratio', 'square')
-            print("mm_patch_merge_type",mm_patch_merge_type)
+            # print("mm_patch_merge_type",mm_patch_merge_type) #mm_patch_merge_type spatial_unpad
             if mm_patch_merge_type == 'flat':
                 image_features = [x.flatten(0, 1) for x in image_features]
             elif mm_patch_merge_type.startswith('spatial'):
